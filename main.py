@@ -1,32 +1,52 @@
-class Human:
-    def __init__(self, name):
+class Employee:
+    def __init__(self, name, age, position, salary):
         self.name = name
+        self.age = age
+        self.position = position
+        self.salary = salary
 
-class Auto:
-    def __init__(self, brand, num_seats):
-        self.brand = brand
-        self.passengers = []
-        self.num_seats = num_seats
 
-    def add_passenger(self, human):
-        if len(self.passengers) >= self.num_seats:
-            print(f"В машині {self.brand} немає місць для нового пасажира {human.name}!!!")
-        else:
-            self.passengers.append(human)
+class Manager(Employee):
+    def __init__(self, name, age, salary, position, num_of_subordinates):
+        super().__init__(name, age, salary, position)
+        self.num_of_subordinates = num_of_subordinates
 
-    def print_passengers(self):
-        if self.passengers != []:
-            print(f"В машині {self.brand} такі пасажири:")
-            for passenger in self.passengers:
-                print(passenger.name)
-        else:
-            print(f"В машині {self.brand} немає пасажирів. Всі втікли!")
+    def say_hello(self):
+        print(f"Привіт, мене звати {self.name}. Мені {self.age} років. Я заробляю {self.position}. І я маю {self.num_of_subordinates} підлеглих.")
 
-car = Auto('Nissan GTR', 4)
-car.add_passenger(Human("Oleg"))
-car.add_passenger(Human("Igor"))
-car.add_passenger(Human("Vlad"))
-car.add_passenger(Human("Adrian"))
-car.add_passenger(Human("Artur"))
-car.print_passengers()
+    def add_subordinates(self, subordinate):
+        self.num_of_subordinates += subordinate
+        print(f"У мене тепер {self.num_of_subordinates} підлеглих.")
+
+    def remove_subordinates(self, subordinate):
+        self.num_of_subordinates -= subordinate
+        print(f"У мене тепер {self.num_of_subordinates} підлеглих.")
+
+
+class Developer(Employee):
+    def __init__(self, name, age, salary, position):
+        super().__init__(name, age, salary, position)
+        self.IT_languages = []
+
+    def say_hello(self):
+        print(f"Привіт, мене звати {self.name}. Мені {self.age} років. Я заробляю {self.position}. І я знаю наступні мови програмування: {', '.join(self.IT_languages)}.")
+
+    def set_languages(self):
+        num_of_languages = int(input("Скільки мов програмування ви знаєте? "))
+        for i in range(num_of_languages):
+            language = input(f"Введіть назву мови програмування #{i+1}: ")
+            self.IT_languages.append(language)
+
+manager = Manager("Adrian", 40, 80000, "Manager", 10)
+developer = Developer("Mark", 25, 60000, "Developer")
+
+
+manager.say_hello()
+print("Додамо 5 підлеглих")
+manager.add_subordinates(5)
+print("Заберемо 7 підлеглих")
+manager.remove_subordinates(7)
+
+developer.set_languages()
+developer.say_hello()
 
