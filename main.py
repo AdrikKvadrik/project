@@ -30,4 +30,3 @@ car.add_passenger(Human("Adrian"))
 car.add_passenger(Human("Artur"))
 car.print_passengers()
 
-
