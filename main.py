@@ -1,52 +1,64 @@
-class Employee:
-    def __init__(self, name, age, position, salary):
-        self.name = name
-        self.age = age
-        self.position = position
-        self.salary = salary
+import sqlite3
 
+conn = sqlite3.connect('users.db')
+cursor = conn.cursor()
 
-class Manager(Employee):
-    def __init__(self, name, age, salary, position, num_of_subordinates):
-        super().__init__(name, age, salary, position)
-        self.num_of_subordinates = num_of_subordinates
+cursor.execute('''CREATE TABLE IF NOT EXISTS users
+                  (username TEXT PRIMARY KEY, password TEXT)''')
 
-    def say_hello(self):
-        print(f"Привіт, мене звати {self.name}. Мені {self.age} років. Я заробляю {self.position}. І я маю {self.num_of_subordinates} підлеглих.")
+def register():
+    username = input("Введіть своє ім'я: ")
 
-    def add_subordinates(self, subordinate):
-        self.num_of_subordinates += subordinate
-        print(f"У мене тепер {self.num_of_subordinates} підлеглих.")
+    cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+    existing_user = cursor.fetchone()
+    if existing_user:
+        print("Користувач з таким ім'ям вже існує. Спробуйте інше ім'я.")
+        return
 
-    def remove_subordinates(self, subordinate):
-        self.num_of_subordinates -= subordinate
-        print(f"У мене тепер {self.num_of_subordinates} підлеглих.")
+    while True:
+        password = input("Ваш пароль: ")
+        confirm_password = input("Підтвердіть ваш пароль: ")
+        if password == confirm_password:
+            cursor.execute("INSERT INTO users VALUES (?, ?)", (username, password))
+            conn.commit()
+            print("Ви успішно зареєструвалися!")
+            return username, password
+        else:
+            print("Пароль неправильний. Повторіть спробу.")
 
+def login():
+    username = input("Введіть своє ім'я: ")
+    password = input("Введіть ваш пароль: ")
+    cursor.execute("SELECT password FROM users WHERE username=?", (username,))
+    result = cursor.fetchone()
+    if result and result[0] == password:
+        print("Все добре! Ви увійшли в обліковий запис.")
+        change_password = input("Бажаєте змінити пароль? (Так/Ні): ")
+        if change_password.lower() == "так":
+            old_password = input("Введіть ваш поточний пароль: ")
+            if old_password == password:
+                new_password = input("Введіть новий пароль: ")
+                cursor.execute("UPDATE users SET password=? WHERE username=?", (new_password, username))
+                conn.commit()
+                print("Пароль успішно змінено.")
+            else:
+                print("Неправильний поточний пароль.")
+    else:
+        print("Неправильне ім'я користувача або пароль.")
 
-class Developer(Employee):
-    def __init__(self, name, age, salary, position):
-        super().__init__(name, age, salary, position)
-        self.IT_languages = []
+while True:
+    print("1. Зареєструватися")
+    print("2. Увійти")
+    print("3. Вийти")
+    choice = input("Виберіть пункт: ")
 
-    def say_hello(self):
-        print(f"Привіт, мене звати {self.name}. Мені {self.age} років. Я заробляю {self.position}. І я знаю наступні мови програмування: {', '.join(self.IT_languages)}.")
+    if choice == "1":
+        register()
+    elif choice == "2":
+        login()
+    elif choice == "3":
+        break
+    else:
+        print("Неправильний вибір!")
 
-    def set_languages(self):
-        num_of_languages = int(input("Скільки мов програмування ви знаєте? "))
-        for i in range(num_of_languages):
-            language = input(f"Введіть назву мови програмування #{i+1}: ")
-            self.IT_languages.append(language)
-
-manager = Manager("Adrian", 40, 80000, "Manager", 10)
-developer = Developer("Mark", 25, 60000, "Developer")
-
-
-manager.say_hello()
-print("Додамо 5 підлеглих")
-manager.add_subordinates(5)
-print("Заберемо 7 підлеглих")
-manager.remove_subordinates(7)
-
-developer.set_languages()
-developer.say_hello()
-
+conn.close()
